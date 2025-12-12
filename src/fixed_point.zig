@@ -333,6 +333,18 @@ pub const Vector2FP = struct {
     pub inline fn eql(a: Vector2FP, b: Vector2FP) bool {
         return a.x.eql(b.x) and a.y.eql(b.y);
     }
+
+    pub inline fn mag2(a: Vector2FP) FP {
+        return a.x.mult(a.x).add(a.y.mult(a.y));
+    }
+
+    pub inline fn mag(a: Vector2FP) FP {
+        return mag2(a).sqrt();
+    }
+
+    pub inline fn normalize(a: Vector2FP) FP {
+        return a.scale(FP.one.div(a.mag()));
+    }
 };
 
 const expect = std.testing.expect;
