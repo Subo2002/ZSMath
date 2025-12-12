@@ -272,6 +272,14 @@ pub const Vector2FP = struct {
         return .{ .x = x, .y = y };
     }
 
+    pub inline fn initFloat(x: f32, y: f32) Vector2FP {
+        return .init(.fromFloat(x), .fromFloat(y));
+    }
+
+    pub inline fn initInt(x: i32, y: i32) Vector2FP {
+        return .init(.fromInt(x), .fromInt(y));
+    }
+
     pub inline fn fromInt(a: Vector2I) Vector2FP {
         return .init(.fromInt(a.x), .fromInt(a.y));
     }
