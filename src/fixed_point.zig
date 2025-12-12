@@ -107,7 +107,7 @@ pub const FP = packed struct {
     }
 
     pub inline fn addEql(a: *FP, b: FP) void {
-        a = a.add(b);
+        a.* = a.add(b);
     }
 
     pub inline fn sub(a: FP, b: FP) FP {
