@@ -342,7 +342,7 @@ pub const Vector2FP = struct {
         return mag2(a).sqrt();
     }
 
-    pub inline fn normalize(a: Vector2FP) FP {
+    pub inline fn normalize(a: Vector2FP) Vector2FP {
         return a.scale(FP.one.div(a.mag()));
     }
 };
