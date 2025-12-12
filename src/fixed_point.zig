@@ -155,7 +155,7 @@ pub const FP = packed struct {
         return FP{ .back = b };
     }
 
-    pub inline fn sin(a: FP) FP {
+    pub fn sin(a: FP) FP {
         //sooo nice, range restriction is so good
         var x = a.toPrincipleRadianRange();
         if (x.greaterThan(.pi_2)) {
@@ -169,7 +169,28 @@ pub const FP = packed struct {
         return x.add(x_3).add(x_5);
     }
 
-    inline fn atan(a: FP) FP {
+    pub fn cos(a: FP) FP {
+        const x = a.toPrincipleRadianRange();
+        if (x.greaterThan(.pi_2)) {
+            return FP.pi.sub(x).cosNice().neg();
+        } else if (x.lessThan(.min_pi_2)) {
+            return FP.min_pi.sub(x).cosNice().neg();
+        } else {
+            return x.cosNice();
+        }
+    }
+
+    inline fn cosNice(x: FP) FP {
+        assert(x.leq(.pi_2) and x.geq(.min_pi_2));
+        const s = x.mult(x);
+        const x_2 = s.div(.fromInt(-2));
+        const x_4 = x_2.mult(s).div(.fromInt(-12));
+        const x_6 = x_4.mult(s).div(.fromInt(-30));
+        //const x_8 = x_6.mult(s).div(.fromInt(-56));
+        return FP.one.add(x_2).add(x_4).add(x_6);
+    }
+
+    pub fn atan(a: FP) FP {
         if (a.greaterThan(.one)) {
             return pi_2.sub(atanSmallBetter(FP.one.div(a)));
         }
@@ -233,7 +254,7 @@ pub const FP = packed struct {
     }
 
     pub inline fn abs(a: FP) FP {
-        return if (a.geq(.zero)) a else a.mult(-1);
+        return if (a.geq(.zero)) a else a.neg();
     }
 };
 
@@ -371,4 +392,12 @@ test "FP sin" {
 
     const b: FP = FP.pi_2.sin();
     try std.testing.expectApproxEqAbs(1, b.toFloat(), @sqrt(2.0 / 65536.0));
+}
+
+test "FP cos" {
+    const a: FP = FP.pi.cos();
+    try std.testing.expectApproxEqAbs(-1, a.toFloat(), @sqrt(2.0 / 65536.0));
+
+    const b: FP = FP.pi_2.cos();
+    try std.testing.expectApproxEqAbs(0, b.toFloat(), @sqrt(2.0 / 65536.0));
 }
