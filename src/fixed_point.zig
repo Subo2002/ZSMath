@@ -311,7 +311,7 @@ pub const Vector2FP = struct {
         if (diff.y.geq(half)) {
             b.y += 1;
         }
-        return b;
+        return b.mult(sign);
     }
 
     pub inline fn toFloat(a: Vector2FP) Vector2 {
