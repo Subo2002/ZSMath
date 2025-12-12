@@ -254,7 +254,11 @@ pub const FP = packed struct {
     }
 
     pub inline fn abs(a: FP) FP {
-        return if (a.geq(.zero)) a else a.neg();
+        return if (a.geq(zero)) a else a.neg();
+    }
+
+    pub inline fn nonNeg(a: FP) bool {
+        return a.geq(zero);
     }
 };
 
@@ -307,12 +311,12 @@ pub const Vector2FP = struct {
     pub inline fn round(a: Vector2FP) Vector2I {
         var b: Vector2I = .init(a.x.toInt(), a.y.toInt());
         const sign: Vector2I = .init(
-            if (b.x.geq(.zero)) 1 else -1,
-            if (b.y.geq(.zero)) 1 else -1,
+            if (a.x.nonNeg()) 1 else -1,
+            if (a.y.nonNeg()) 1 else -1,
         );
         b = b.mult(sign);
         const diff: Vector2FP = a.mult(.fromInt(sign)).sub(.fromInt(b));
-        const half = .fromFromFrac(1, 2);
+        const half = FP.fromFrac(1, 2);
         if (diff.x.geq(half)) {
             b.x += 1;
         }
@@ -408,4 +412,9 @@ test "FP cos" {
 
     const b: FP = FP.pi_2.cos();
     try std.testing.expectApproxEqAbs(0, b.toFloat(), @sqrt(2.0 / 65536.0));
+}
+
+test "FPV round" {
+    const a: Vector2FP = .initFloat(0.5, -0.4);
+    try std.testing.expect(a.round().eql(.init(1, 0)));
 }
