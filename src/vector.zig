@@ -23,11 +23,15 @@ pub const Vector2I = struct {
     }
 
     pub inline fn div(a: Vector2I, b: Vector2I) Vector2I {
-        return .{ .x = a.x / b.x, .y = a.y / b.y };
+        return .{ .x = @divTrunc(a.x, b.x), .y = @divTrunc(a.y, b.y) };
     }
 
     pub inline fn scale(a: Vector2I, c: i32) Vector2I {
         return .{ .x = a.x * c, .y = a.y * c };
+    }
+
+    pub inline fn divScale(a: Vector2I, c: i32) Vector2I {
+        return .{ .x = @divTrunc(a.x, c), .y = @divTrunc(a.y, c) };
     }
 
     pub inline fn toFloat(a: Vector2I) Vector2 {
