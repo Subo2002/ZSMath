@@ -93,7 +93,7 @@ pub const Vector2FP = struct {
     }
 
     pub inline fn dot(a: Vector2FP, b: Vector2FP) FP {
-        return a.x * b.x + a.y * b.y;
+        return a.x.mult(b.x).add(a.y.mult(b.y));
     }
 };
 
@@ -106,4 +106,10 @@ test "FPV mag" {
     const a: Vector2FP = .initFloat(400, 300);
     const mag_a = a.mag();
     try std.testing.expect(mag_a.eql(.fromInt(500)));
+}
+
+test "FPV dot" {
+    const a: Vector2FP = .initInt(1, 0);
+    const b: Vector2FP = .initInt(1, 1);
+    try std.testing.expect(a.dot(b).eql(.fromInt(1)));
 }
