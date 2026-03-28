@@ -45,6 +45,10 @@ pub const Vector2I = struct {
     pub inline fn eql(a: Vector2I, b: Vector2I) bool {
         return a.x == b.x and a.y == b.y;
     }
+
+    pub inline fn dot(a: Vector2I, b: Vector2I) i32 {
+        return a.x * b.x + a.y * b.y;
+    }
 };
 
 pub const Vector2 = struct {
@@ -119,6 +123,10 @@ pub const Vector2 = struct {
         if (a.x < 0) angle += if (a.y >= 0) std.math.pi else -std.math.pi;
         return @floatCast(angle);
     }
+
+    pub inline fn dot(a: Vector2, b: Vector2) f32 {
+        return a.x * b.x + a.y * b.y;
+    }
 };
 
 pub const Vector2B = struct {
@@ -181,5 +189,9 @@ pub const Vector2B = struct {
 
     pub inline fn lengthSquared(a: Vector2B) f64 {
         return a.x * a.x + a.y * a.y;
+    }
+
+    pub inline fn dot(a: Vector2B, b: Vector2B) Vector2B {
+        a.x * b.x + a.y * b.y;
     }
 };

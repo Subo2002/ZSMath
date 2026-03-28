@@ -91,6 +91,10 @@ pub const Vector2FP = struct {
     pub inline fn normalize(a: Vector2FP) Vector2FP {
         return a.scale(FP.one.div(a.mag()));
     }
+
+    pub inline fn dot(a: Vector2FP, b: Vector2FP) FP {
+        return a.x * b.x + a.y * b.y;
+    }
 };
 
 test "FPV round" {
