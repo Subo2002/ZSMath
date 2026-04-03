@@ -115,7 +115,7 @@ pub fn FP(int_size: u32, frac_size: u32) type {
 
         pub inline fn fromInt(i: i32) Self {
             return Self{
-                .back = i * frac_scale,
+                .back = @as(BackInt, @intCast(i)) * frac_scale,
             };
         }
 

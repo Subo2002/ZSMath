@@ -17,6 +17,6 @@ test "Fp fromInt" {
 }
 
 test "FPVec" {
-    const a = Vector2FP.initInt(1, 1);
+    const a = Vector2FP(FP(16, 16)).initInt(1, 1);
     _ = a;
 }
