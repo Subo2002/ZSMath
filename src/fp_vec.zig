@@ -105,10 +105,10 @@ pub fn Vector2FP(FP: type) type {
             return a.x.eql(b.x) and a.y.eql(b.y);
         }
 
-        pub inline fn mag2(a: Self) FP2 {
+        pub inline fn mag2(a: Self) FP {
             const Vector2FP2 = Vector2FP(FP2);
             const b = Vector2FP2.implCast(a);
-            return b.x.mult(b.x).add(b.y.mult(b.y));
+            return FP.cast(b.x.mult(b.x).add(b.y.mult(b.y)));
         }
 
         pub inline fn implCast(a: anytype) Self {
@@ -131,11 +131,11 @@ pub fn Vector2FP(FP: type) type {
             return a.scale(FP.one.div(a.mag()));
         }
 
-        pub inline fn dot(a: Self, b: Self) FP2 {
+        pub inline fn dot(a: Self, b: Self) FP {
             const Vector2FP2 = Vector2FP(FP2);
             const c = Vector2FP2.implCast(a);
             const d = Vector2FP2.implCast(b);
-            return c.x.mult(d.x).add(c.y.mult(d.y));
+            return FP.cast(c.x.mult(d.x).add(c.y.mult(d.y)));
         }
     };
 }
