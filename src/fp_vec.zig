@@ -15,7 +15,11 @@ pub const IsVector2FP = struct {
 
     pub fn ToType(is_vector2FP: IsVector2FP) type {
         const fp = is_vector2FP.fp_data;
-        return Vector2FP(MakeFP(fp.int_bits, fp.frac_bits));
+        return Vector2FP(MakeFP(
+            fp.int_bits,
+            fp.frac_bits,
+            fp.signedness,
+        ));
     }
 
     pub fn asVector2FP(a: anytype) ToType((@TypeOf(a).is_vector2FP)) {
@@ -23,15 +27,17 @@ pub const IsVector2FP = struct {
     }
 };
 
-pub fn Vector2FP(FP: type) type {
+pub fn Vector2FP(FPBase: type) type {
     //also makes sure the type is an FP
-    const is_fp: IsFP = FP.is_fp;
+    const is_fp: IsFP = FPBase.is_fp;
     return struct {
         pub const is_vector2FP = IsVector2FP.init(is_fp);
         const Self = @This();
+        pub const FP = FPBase;
         pub const FP2 = MakeFP(
             is_fp.int_bits * 2,
             is_fp.frac_bits * 2,
+            is_fp.signedness,
         );
 
         x: FP,
@@ -124,11 +130,27 @@ pub fn Vector2FP(FP: type) type {
         pub inline fn mag(a: Self) FP {
             const Vector2FP2 = Vector2FP(FP2);
             const b = Vector2FP2.implCast(a);
-            return FP.cast(b.x.mult(b.x).add(b.y.mult(b.y)).sqrt());
+            const _mag2 = b.x.mult(b.x).add(b.y.mult(b.y));
+            const _mag = _mag2.sqrt();
+            return FP.cast(_mag);
         }
 
-        pub inline fn normalize(a: Self) Self {
-            return a.scale(FP.one.div(a.mag()));
+        pub const Vector2UnitFP = Vector2FP(FP.UnitFP);
+
+        pub inline fn normalize(a: Self) Vector2UnitFP {
+            //want to use intermediate FP with frac_bits incremented
+            //by the number of int_bits, int_bits the same.
+            //Then return an FP with the same size as the input FP,
+            //but all but one of the int_bits are being used as frac bits now.
+            //I for intermediate
+            const IFP = MakeFP(
+                is_fp.int_bits,
+                is_fp.int_bits + is_fp.frac_bits,
+                is_fp.signedness,
+            );
+            const Vector2IFP = Vector2FP(IFP);
+            const b = Vector2IFP.implCast(a);
+            return .cast(b.scale(IFP.one.div(b.mag())));
         }
 
         pub inline fn dot(a: Self, b: Self) FP {
@@ -140,21 +162,35 @@ pub fn Vector2FP(FP: type) type {
     };
 }
 
+test "FPV normalize" {
+    const FP = MakeFP(16, 1, .signed);
+    const V2FP = Vector2FP(FP);
+    const UnitV2FP = Vector2FP(FP.UnitFP);
+    const a: V2FP = .initInt(200, 200);
+    const a_hat: UnitV2FP = a.normalize();
+    const a_hat_mag = a_hat.mag();
+    const prec_sqrt = UnitV2FP.FP.prec.sqrt();
+    std.debug.print("a_hat_mag: {}", .{a_hat_mag.toFloat()});
+    try std.testing.expect(
+        a_hat_mag.aprxEql(.fromInt(1), prec_sqrt),
+    );
+}
+
 test "FPV round" {
-    const V2FP = Vector2FP(MakeFP(16, 16));
+    const V2FP = Vector2FP(MakeFP(16, 16, .signed));
     const a: V2FP = .initFloat(0.5, -0.4);
     try std.testing.expect(a.round().eql(.init(1, 0)));
 }
 
 test "FPV mag" {
-    const V2FP = Vector2FP(MakeFP(16, 16));
+    const V2FP = Vector2FP(MakeFP(16, 16, .signed));
     const a: V2FP = .initFloat(400, 300);
     const mag_a = a.mag();
     try std.testing.expect(mag_a.eql(.fromInt(500)));
 }
 
 test "FPV dot" {
-    const V2FP = Vector2FP(MakeFP(16, 16));
+    const V2FP = Vector2FP(MakeFP(16, 16, .signed));
     const a: V2FP = .initInt(1, 0);
     const b: V2FP = .initInt(1, 1);
     try std.testing.expect(a.dot(b).eql(.fromInt(1)));

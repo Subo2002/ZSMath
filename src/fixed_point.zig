@@ -4,25 +4,21 @@ const assert = std.debug.assert;
 pub const IsFP = struct {
     int_bits: u32,
     frac_bits: u32,
+    signedness: std.builtin.Signedness,
 };
 
-pub fn FP(int_size: u32, frac_size: u32) type {
+pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) type {
     const BackInt: type = @Type(.{ .int = .{
+        .bits = int_size + frac_size,
+        .signedness = signedness,
+    } });
+    const SignedBackInt: type = @Type(.{ .int = .{
         .bits = int_size + frac_size,
         .signedness = .signed,
     } });
-    const Int: type = @Type(.{ .int = .{
-        .bits = int_size,
-        .signedness = .signed,
-    } });
-    const Frac: type = @Type(.{ .int = .{ .bits = frac_size, .signedness = .unsigned } });
     const BackInt2: type = @Type(.{ .int = .{
         .bits = (int_size + frac_size) * 2,
-        .signedness = .signed,
-    } });
-    const UBackInt2: type = @Type(.{ .int = .{
-        .bits = (int_size + frac_size) * 2,
-        .signedness = .unsigned,
+        .signedness = signedness,
     } });
     return struct {
         back: BackInt,
@@ -30,9 +26,12 @@ pub fn FP(int_size: u32, frac_size: u32) type {
         pub const is_fp: IsFP = .{
             .int_bits = int_size,
             .frac_bits = frac_bits,
+            .signedness = signedness,
         };
         const Self = @This();
         pub const frac_bits = frac_size;
+        pub const int_bits = int_size;
+        pub const bits = int_size + frac_size;
         pub const frac_scale = 1 << frac_bits;
         pub const prec: Self = Self{ .back = 2 }; // = 2 / frac_scale
 
@@ -45,7 +44,7 @@ pub fn FP(int_size: u32, frac_size: u32) type {
         pub const pi_4: Self = pi_2.div(.fromInt(2));
         pub const min_pi: Self = .neg(pi);
 
-        pub fn implCast(a: anytype) Self {
+        pub inline fn implCast(a: anytype) Self {
             const a_fp: IsFP = @TypeOf(a).is_fp;
             comptime assert(is_fp.int_bits >= a_fp.int_bits and is_fp.frac_bits >= a_fp.frac_bits);
             //std.debug.print("a: {}, new_frac_bits: {}, old_frac_bits: {}", .{
@@ -56,18 +55,12 @@ pub fn FP(int_size: u32, frac_size: u32) type {
             return Self{ .back = @as(BackInt, @intCast(a.back)) << (frac_size - a_fp.frac_bits) };
         }
 
-        pub fn cast(a: anytype) Self {
+        pub inline fn cast(a: anytype) Self {
             const a_fp: IsFP = @TypeOf(a).is_fp;
-            return Self{ .back = if (@as(i32, @intCast(frac_size)) - @as(i32, @intCast(a_fp.frac_bits)) >= 0)
+            return Self{ .back = if (@as(SignedBackInt, @intCast(frac_size)) - @as(SignedBackInt, @intCast(a_fp.frac_bits)) >= 0)
                 @intCast(a.back << (frac_size - a_fp.frac_bits))
             else
                 @intCast(a.back >> (a_fp.frac_bits - frac_size)) };
-        }
-
-        pub fn fromIntAndFrac(int_part: Int, frac_part: Frac) Self {
-            return .{
-                .back = (int_part << frac_bits) + frac_part,
-            };
         }
 
         pub fn fromFormat(comptime a: []const u8) !Self {
@@ -123,6 +116,12 @@ pub fn FP(int_size: u32, frac_size: u32) type {
             return Self.fromInt(a).div(.fromInt(b));
         }
 
+        pub inline fn init(i: BackInt) Self {
+            return Self{
+                .back = i,
+            };
+        }
+
         pub inline fn toInt(f: Self) i32 {
             return @divTrunc(f.back, frac_scale);
         }
@@ -166,6 +165,7 @@ pub fn FP(int_size: u32, frac_size: u32) type {
         }
 
         pub inline fn sub(a: Self, b: Self) Self {
+            if (signedness == .unsigned) assert(a.back >= b.back);
             return Self{
                 .back = a.back - b.back,
             };
@@ -186,9 +186,17 @@ pub fn FP(int_size: u32, frac_size: u32) type {
 
         pub inline fn sqrt(a: Self) Self {
             assert(a.back >= 0);
-            return Self{
-                .back = @intCast(std.math.sqrt(@as(UBackInt2, @intCast(a.back)) * frac_scale)),
-            };
+            //this could be tightened up
+            const b = FP2.UFP.implCast(a);
+            const Int = @Type(.{ .int = .{
+                .bits = FP2.UFP.bits + FP2.UFP.frac_bits,
+                .signedness = .unsigned,
+            } });
+            const b_back = @as(Int, @intCast(b.back)) << FP2.UFP.frac_bits;
+            const sqrt_b = FP2.UFP.init(
+                @intCast(std.math.sqrt(b_back)),
+            );
+            return Self.cast(sqrt_b);
         }
 
         pub inline fn neg(a: Self) Self {
@@ -282,7 +290,11 @@ pub fn FP(int_size: u32, frac_size: u32) type {
             return a.mult(.pi_4).sub(a.mult(b).mult(c));
         }
 
-        pub inline fn aprxEql(a: Self, b: Self, comptime precision: Self) bool {
+        pub inline fn aprxEql(
+            a: Self,
+            b: Self, //comptime
+            precision: Self,
+        ) bool {
             const e = a.sub(b).back;
             const abs_e = if (e >= 0) e else -e;
             return abs_e < precision.back;
@@ -319,6 +331,30 @@ pub fn FP(int_size: u32, frac_size: u32) type {
         //pub inline fn max(a: FP, b: FP) FP {
         //    return if (a.lessThan(b))
         //}
+
+        pub const UFP = FP(
+            is_fp.int_bits,
+            is_fp.frac_bits,
+            std.builtin.Signedness.unsigned,
+        );
+
+        pub const SFP = FP(
+            is_fp.int_bits,
+            is_fp.frac_bits,
+            std.builtin.Signedness.signed,
+        );
+
+        pub const UnitFP = FP(
+            2,
+            is_fp.int_bits + is_fp.frac_bits - 2,
+            signedness,
+        );
+
+        pub const FP2 = FP(
+            is_fp.int_bits * 2,
+            is_fp.frac_bits * 2,
+            signedness,
+        );
     };
 }
 
@@ -331,7 +367,7 @@ const float_test_values = [_]f32{
     10000.34,
 };
 
-const FP16_16 = FP(16, 16);
+const FP16_16 = FP(16, 16, .signed);
 
 test "Fp fromInt" {
     const a = FP16_16.fromInt(1);
