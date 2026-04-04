@@ -66,7 +66,7 @@ pub fn Vector2FP(FPBase: type) type {
         }
 
         pub inline fn neg(a: Self) Self {
-            return Self(a.x.neg(), a.y.neg());
+            return .init(a.x.neg(), a.y.neg());
         }
 
         pub inline fn add(a: Self, b: Self) Self {
