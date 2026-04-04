@@ -157,6 +157,10 @@ pub fn Vector2FP(FPBase: type) type {
             return .cast(b.scale(IFP.one.div(b.mag())));
         }
 
+        pub inline fn resize(a: Self, b: anytype) Vector2FP(IsFP.ToType(@TypeOf(b).is_fp)) {
+            return .init(.multAny(a.x, b), .multAny(a.y, b));
+        }
+
         pub inline fn scaleUnit(a: Self, b: FP.UnitFP) Self {
             return Self.init(a.x.multUnit(b), a.y.multUnit(b));
         }
@@ -212,4 +216,12 @@ test "FP unitScale" {
     const a: V2FP = .initInt(1, 1);
     const b = a.scaleUnit(.fromFloat(0.1));
     try std.testing.expect(b.x.aprxEql(.fromFloat(0.1), V2FP.FP.prec));
+}
+
+test "FP rescale" {
+    const FP = MakeFP(16, 16, .signed);
+    const V2FP = Vector2FP(FP);
+    const a: V2FP.Vector2UnitFP = .initInt(1, 1);
+    const b = a.resize(FP.fromFloat(10));
+    try std.testing.expect(b.x.aprxEql(FP.fromFloat(10), FP.prec));
 }

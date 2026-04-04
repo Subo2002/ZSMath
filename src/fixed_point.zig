@@ -18,7 +18,7 @@ pub const IsFP = struct {
         );
     }
 
-    pub inline fn asFP(a: anytype) ToType(isFP(a)) {
+    pub inline fn asFP(a: anytype) ToType(@TypeOf(a).is_fp) {
         return a;
     }
 };
