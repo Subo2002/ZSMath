@@ -394,6 +394,24 @@ pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) typ
             ));
         }
 
+        pub fn addAny(a: anytype, b: anytype) Self {
+            const a_is_fp: IsFP = IsFP.isFP(a);
+            const b_is_fp: IsFP = IsFP.isFP(b);
+            const IFP = FP(
+                @as(u32, @intCast(@max(a_is_fp.int_bits, b_is_fp.int_bits))) + 1,
+                @as(u32, @intCast(@max(a_is_fp.frac_bits, b_is_fp.frac_bits))),
+                if (a_is_fp.signedness == .signed or
+                    b_is_fp.signedness == .signed)
+                    .signed
+                else
+                    .unsigned,
+            );
+            return .cast(IFP.add(
+                .implCast(IsFP.asFP(a)),
+                .implCast(IsFP.asFP(b)),
+            ));
+        }
+
         pub const FP2 = FP(
             is_fp.int_bits * 2,
             is_fp.frac_bits * 2,

@@ -169,6 +169,12 @@ pub fn Vector2FP(FPBase: type) type {
             return Self.init(a.x.multUnit(b.x), a.y.multUnit(b.y));
         }
 
+        pub inline fn addAny(a: anytype, b: anytype) Self {
+            const c = IsVector2FP.asVector2FP(a);
+            const d = IsVector2FP.asVector2FP(b);
+            return .init(.addAny(c.x, d.x), .addAny(c.y, d.y));
+        }
+
         pub inline fn dot(a: Self, b: Self) FP {
             const Vector2FP2 = Vector2FP(FP2);
             const c = Vector2FP2.implCast(a);
@@ -224,4 +230,14 @@ test "FP rescale" {
     const a: V2FP.Vector2UnitFP = .initInt(1, 1);
     const b = a.resize(FP.fromFloat(10));
     try std.testing.expect(b.x.aprxEql(FP.fromFloat(10), FP.prec));
+}
+
+test "FP addAny" {
+    const SmallFP = MakeFP(1, 15, .signed);
+    const BigFP = MakeFP(16, 0, .signed);
+    const FP = MakeFP(16, 16, .signed);
+    const a: Vector2FP(SmallFP) = .initFloat(0.01, 0.01);
+    const b: Vector2FP(BigFP) = .initInt(100, 100);
+    const a_plus_b: Vector2FP(FP) = .addAny(a, b);
+    try std.testing.expect(a_plus_b.x.aprxEql(FP.fromFloat(100.01), FP.prec));
 }
