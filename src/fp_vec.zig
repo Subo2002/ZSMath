@@ -13,6 +13,10 @@ pub const IsVector2FP = struct {
         return IsVector2FP{ .fp_data = fp_data };
     }
 
+    pub fn isFP(a: anytype) IsVector2FP {
+        return @TypeOf(a).is_vector2FP;
+    }
+
     pub fn ToType(is_vector2FP: IsVector2FP) type {
         const fp = is_vector2FP.fp_data;
         return Vector2FP(MakeFP(
@@ -22,7 +26,7 @@ pub const IsVector2FP = struct {
         ));
     }
 
-    pub fn asVector2FP(a: anytype) ToType((@TypeOf(a).is_vector2FP)) {
+    pub fn asVector2FP(a: anytype) ToType(@TypeOf(a).is_vector2FP) {
         return a;
     }
 };
@@ -153,6 +157,14 @@ pub fn Vector2FP(FPBase: type) type {
             return .cast(b.scale(IFP.one.div(b.mag())));
         }
 
+        pub inline fn scaleUnit(a: Self, b: FP.UnitFP) Self {
+            return Self.init(a.x.multUnit(b), a.y.multUnit(b));
+        }
+
+        pub inline fn multUnit(a: Self, b: Vector2UnitFP) Self {
+            return Self.init(a.x.multUnit(b.x), a.y.multUnit(b.y));
+        }
+
         pub inline fn dot(a: Self, b: Self) FP {
             const Vector2FP2 = Vector2FP(FP2);
             const c = Vector2FP2.implCast(a);
@@ -170,7 +182,6 @@ test "FPV normalize" {
     const a_hat: UnitV2FP = a.normalize();
     const a_hat_mag = a_hat.mag();
     const prec_sqrt = UnitV2FP.FP.prec.sqrt();
-    std.debug.print("a_hat_mag: {}", .{a_hat_mag.toFloat()});
     try std.testing.expect(
         a_hat_mag.aprxEql(.fromInt(1), prec_sqrt),
     );
@@ -194,4 +205,11 @@ test "FPV dot" {
     const a: V2FP = .initInt(1, 0);
     const b: V2FP = .initInt(1, 1);
     try std.testing.expect(a.dot(b).eql(.fromInt(1)));
+}
+
+test "FP unitScale" {
+    const V2FP = Vector2FP(MakeFP(16, 16, .signed));
+    const a: V2FP = .initInt(1, 1);
+    const b = a.scaleUnit(.fromFloat(0.1));
+    try std.testing.expect(b.x.aprxEql(.fromFloat(0.1), V2FP.FP.prec));
 }

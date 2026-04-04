@@ -5,6 +5,22 @@ pub const IsFP = struct {
     int_bits: u32,
     frac_bits: u32,
     signedness: std.builtin.Signedness,
+
+    pub inline fn isFP(a: anytype) IsFP {
+        return @TypeOf(a).is_fp;
+    }
+
+    pub inline fn ToType(is_fp: IsFP) type {
+        return FP(
+            is_fp.int_bits,
+            is_fp.frac_bits,
+            is_fp.signedness,
+        );
+    }
+
+    pub inline fn asFP(a: anytype) ToType(isFP(a)) {
+        return a;
+    }
 };
 
 pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) type {
@@ -172,9 +188,10 @@ pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) typ
         }
 
         pub inline fn mult(a: Self, b: Self) Self {
-            return Self{
-                .back = @intCast((@as(BackInt2, @intCast(a.back)) * @as(BackInt2, @intCast(b.back))) >> frac_bits),
-            };
+            const a_back: BackInt2 = @intCast(a.back);
+            const b_back: BackInt2 = @intCast(b.back);
+            const ab_back: BackInt2 = (a_back * b_back) >> frac_bits;
+            return .init(@intCast(ab_back));
         }
 
         pub inline fn div(a: Self, b: Self) Self {
@@ -349,6 +366,33 @@ pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) typ
             is_fp.int_bits + is_fp.frac_bits - 2,
             signedness,
         );
+
+        pub fn multUnit(a: Self, b: UnitFP) Self {
+            const IFP = FP(
+                int_bits + UnitFP.int_bits,
+                frac_bits + UnitFP.frac_bits,
+                Self.is_fp.signedness,
+            );
+            return .cast(IFP.mult(.implCast(a), .implCast(b)));
+        }
+
+        pub fn multAny(a: anytype, b: anytype) Self {
+            const a_is_fp: IsFP = IsFP.isFP(a);
+            const b_is_fp: IsFP = IsFP.isFP(b);
+            const IFP = FP(
+                a_is_fp.int_bits + b_is_fp.int_bits,
+                a_is_fp.frac_bits + b_is_fp.frac_bits,
+                if (a_is_fp.signedness == .signed or
+                    b_is_fp.signedness == .signed)
+                    .signed
+                else
+                    .unsigned,
+            );
+            return .cast(IFP.mult(
+                .implCast(IsFP.asFP(a)),
+                .implCast(IsFP.asFP(b)),
+            ));
+        }
 
         pub const FP2 = FP(
             is_fp.int_bits * 2,
