@@ -49,6 +49,10 @@ pub const Vector2I = struct {
     pub inline fn dot(a: Vector2I, b: Vector2I) i32 {
         return a.x * b.x + a.y * b.y;
     }
+
+    pub inline fn neg(a: Vector2I) Vector2I {
+        return .init(-a.x, -a.y);
+    }
 };
 
 pub const Vector2 = struct {
@@ -127,6 +131,10 @@ pub const Vector2 = struct {
     pub inline fn dot(a: Vector2, b: Vector2) f32 {
         return a.x * b.x + a.y * b.y;
     }
+
+    pub inline fn neg(a: Vector2) Vector2 {
+        return .init(-a.x, -a.y);
+    }
 };
 
 pub const Vector2B = struct {
@@ -193,5 +201,9 @@ pub const Vector2B = struct {
 
     pub inline fn dot(a: Vector2B, b: Vector2B) Vector2B {
         a.x * b.x + a.y * b.y;
+    }
+
+    pub inline fn neg(a: Vector2B) Vector2B {
+        return .init(-a.x, -a.y);
     }
 };
