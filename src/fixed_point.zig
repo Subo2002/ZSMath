@@ -36,6 +36,10 @@ pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) typ
         .bits = (int_size + frac_size) * 2,
         .signedness = signedness,
     } });
+    const Int = @Type(.{ .int = .{
+        .bits = int_size,
+        .signedness = signedness,
+    } });
     return struct {
         back: BackInt,
 
@@ -122,13 +126,15 @@ pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) typ
             return sum;
         }
 
-        pub inline fn fromInt(i: i32) Self {
+        pub inline fn fromInt(i: anytype) Self {
+            const i_info = @typeInfo(@TypeOf(i));
+            assert(i_info == .int or i_info == .comptime_int);
             return Self{
                 .back = @as(BackInt, @intCast(i)) * frac_scale,
             };
         }
 
-        pub inline fn fromFrac(a: i32, b: i32) Self {
+        pub inline fn fromFrac(a: anytype, b: anytype) Self {
             return Self.fromInt(a).div(.fromInt(b));
         }
 
@@ -138,8 +144,8 @@ pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) typ
             };
         }
 
-        pub inline fn toInt(f: Self) i32 {
-            return @divTrunc(f.back, frac_scale);
+        pub inline fn toInt(f: Self) Int {
+            return @intCast(@divTrunc(f.back, frac_scale));
         }
 
         pub inline fn getIntFrac(f: Self) u32 {
@@ -205,11 +211,11 @@ pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) typ
             assert(a.back >= 0);
             //this could be tightened up
             const b = FP2.UFP.implCast(a);
-            const Int = @Type(.{ .int = .{
+            const BigInt = @Type(.{ .int = .{
                 .bits = FP2.UFP.bits + FP2.UFP.frac_bits,
                 .signedness = .unsigned,
             } });
-            const b_back = @as(Int, @intCast(b.back)) << FP2.UFP.frac_bits;
+            const b_back = @as(BigInt, @intCast(b.back)) << FP2.UFP.frac_bits;
             const sqrt_b = FP2.UFP.init(
                 @intCast(std.math.sqrt(b_back)),
             );

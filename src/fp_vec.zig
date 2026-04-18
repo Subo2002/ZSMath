@@ -1,10 +1,12 @@
 const MakeFP = @import("fixed_point.zig").FP;
 const IsFP = @import("fixed_point.zig").IsFP;
 const Vectors = @import("vector.zig");
-const Vector2I = Vectors.Vector2I;
+//const Vector2I = Vectors.MakeVector2I(i32);
 const Vector2 = Vectors.Vector2;
+const IsVector2I = Vectors.IsVector2I;
 const std = @import("std");
 const assert = std.debug.assert;
+const MakeVector2I = Vectors.MakeVector2I;
 
 pub const IsVector2FP = struct {
     fp_data: IsFP,
@@ -43,6 +45,10 @@ pub fn Vector2FP(FPBase: type) type {
             is_fp.frac_bits * 2,
             is_fp.signedness,
         );
+        pub const Vector2I = MakeVector2I(@Type(.{ .int = .{
+            .bits = is_fp.int_bits,
+            .signedness = is_fp.signedness,
+        } }));
 
         x: FP,
         y: FP,
@@ -57,12 +63,13 @@ pub fn Vector2FP(FPBase: type) type {
             return .init(.fromFloat(x), .fromFloat(y));
         }
 
-        pub inline fn initInt(x: i32, y: i32) Self {
+        pub inline fn initInt(x: anytype, y: anytype) Self {
             return .init(.fromInt(x), .fromInt(y));
         }
 
-        pub inline fn fromInt(a: Vector2I) Self {
-            return .init(.fromInt(a.x), .fromInt(a.y));
+        pub inline fn fromInt(a: anytype) Self {
+            const b = IsVector2I.asVector2I(a);
+            return .init(.fromInt(b.x), .fromInt(b.y));
         }
 
         pub inline fn neg(a: Self) Self {
