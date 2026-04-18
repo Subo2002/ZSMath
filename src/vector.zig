@@ -135,7 +135,7 @@ test "Vector2I bitmask" {
     const Vector2i16 = MakeVector2I(i16);
     const a: Vector2i16 = .init(10, 10);
     const a_and_7 = a.andScalar(7);
-    try std.testing.expect(a_and_7.eql(.init(8, 8)));
+    try std.testing.expect(a_and_7.eql(.init(2, 2)));
 }
 
 pub const Vector2 = struct {
