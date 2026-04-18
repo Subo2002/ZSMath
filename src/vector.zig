@@ -1,139 +1,139 @@
 const std = @import("std");
 const assert = std.debug.assert;
 
-pub const IsVector2I = struct {
+pub const IsVector2Int = struct {
     int: type,
 
-    pub inline fn asVector2I(a: anytype) MakeVector2I(@TypeOf(a).is_vector2I.int) {
+    pub inline fn asVector2I(a: anytype) MakeVector2Int(@TypeOf(a).is_vector2I.int) {
         return a;
     }
 };
 
-pub fn MakeVector2I(Int: type) type {
+pub fn MakeVector2Int(Int: type) type {
     std.debug.assert(@typeInfo(Int) == .int);
     return struct {
         x: Int,
         y: Int,
 
-        pub const is_vector2I: IsVector2I = .{ .int = Int };
-        const Vector2I = @This();
+        pub const is_vector2I: IsVector2Int = .{ .int = Int };
+        const Vector2Int = @This();
 
-        pub const zero: Vector2I = .init(0, 0);
+        pub const zero: Vector2Int = .init(0, 0);
 
-        pub inline fn init(x: Int, y: Int) Vector2I {
+        pub inline fn init(x: Int, y: Int) Vector2Int {
             return .{ .x = x, .y = y };
         }
 
-        pub inline fn implCast(a: anytype) Vector2I {
-            const b = IsVector2I.asVector2I(a);
+        pub inline fn implCast(a: anytype) Vector2Int {
+            const b = IsVector2Int.asVector2I(a);
             return .init(b.x, b.y);
         }
 
-        pub inline fn cast(a: anytype) Vector2I {
-            const b = IsVector2I.asVector2I(a);
+        pub inline fn cast(a: anytype) Vector2Int {
+            const b = IsVector2Int.asVector2I(a);
             return .init(@intCast(b.x), @intCast(b.y));
         }
 
-        pub inline fn add(a: Vector2I, b: Vector2I) Vector2I {
+        pub inline fn add(a: Vector2Int, b: Vector2Int) Vector2Int {
             return .{ .x = a.x + b.x, .y = a.y + b.y };
         }
 
-        pub inline fn sub(a: Vector2I, b: Vector2I) Vector2I {
+        pub inline fn sub(a: Vector2Int, b: Vector2Int) Vector2Int {
             return .{ .x = a.x - b.x, .y = a.y - b.y };
         }
 
-        pub inline fn mult(a: Vector2I, b: Vector2I) Vector2I {
+        pub inline fn mult(a: Vector2Int, b: Vector2Int) Vector2Int {
             return .{ .x = a.x * b.x, .y = a.y * b.y };
         }
 
-        pub inline fn div(a: Vector2I, b: Vector2I) Vector2I {
+        pub inline fn div(a: Vector2Int, b: Vector2Int) Vector2Int {
             return .{ .x = @divTrunc(a.x, b.x), .y = @divTrunc(a.y, b.y) };
         }
 
-        pub inline fn scale(a: Vector2I, c: Int) Vector2I {
+        pub inline fn scale(a: Vector2Int, c: Int) Vector2Int {
             return .{ .x = a.x * c, .y = a.y * c };
         }
 
-        pub inline fn divScale(a: Vector2I, c: Int) Vector2I {
+        pub inline fn divScale(a: Vector2Int, c: Int) Vector2Int {
             return .{ .x = @divTrunc(a.x, c), .y = @divTrunc(a.y, c) };
         }
 
-        pub inline fn toFloat(a: Vector2I) Vector2 {
+        pub inline fn toFloat(a: Vector2Int) Vector2 {
             return .{ .x = @floatFromInt(a.x), .y = @floatFromInt(a.y) };
         }
 
-        pub inline fn toDouble(a: Vector2I) Vector2B {
+        pub inline fn toDouble(a: Vector2Int) Vector2B {
             return .{ .x = @floatFromInt(a.x), .y = @floatFromInt(a.y) };
         }
 
-        pub inline fn eql(a: Vector2I, b: Vector2I) bool {
+        pub inline fn eql(a: Vector2Int, b: Vector2Int) bool {
             return a.x == b.x and a.y == b.y;
         }
 
-        pub inline fn dot(a: Vector2I, b: Vector2I) i32 {
+        pub inline fn dot(a: Vector2Int, b: Vector2Int) i32 {
             return a.x * b.x + a.y * b.y;
         }
 
-        pub inline fn neg(a: Vector2I) Vector2I {
+        pub inline fn neg(a: Vector2Int) Vector2Int {
             comptime std.debug.assert(@typeInfo(Int).int.signedness == .signed);
             return .init(-a.x, -a.y);
         }
 
-        pub inline fn shlScalar(a: Vector2I, b: u8) Vector2I {
+        pub inline fn shlScalar(a: Vector2Int, b: u8) Vector2Int {
             return .init(a.x << b, a.y << b);
         }
 
-        pub inline fn shlVec(a: Vector2I, b: Vector2I) Vector2I {
+        pub inline fn shlVec(a: Vector2Int, b: Vector2Int) Vector2Int {
             return .init(a.x << b.x, a.x << b.x);
         }
 
-        pub inline fn shrScalar(a: Vector2I, b: u8) Vector2I {
+        pub inline fn shrScalar(a: Vector2Int, b: u8) Vector2Int {
             return .init(a.x >> b, a.y >> b);
         }
 
-        pub inline fn shrVec(a: Vector2I, b: Vector2I) Vector2I {
+        pub inline fn shrVec(a: Vector2Int, b: Vector2Int) Vector2Int {
             return .init(a.x >> b.x, a.y >> b.y);
         }
 
-        pub inline fn andScalar(a: Vector2I, b: Int) Vector2I {
+        pub inline fn andScalar(a: Vector2Int, b: Int) Vector2Int {
             return .init(a.x & b, a.y & b);
         }
 
-        pub inline fn andVec(a: Vector2I, b: Vector2I) Vector2I {
+        pub inline fn andVec(a: Vector2Int, b: Vector2Int) Vector2Int {
             return .init(a.x & b.x, a.y & b.y);
         }
 
-        pub inline fn orScalar(a: Vector2I, b: Int) Vector2I {
+        pub inline fn orScalar(a: Vector2Int, b: Int) Vector2Int {
             return .init(a.x | b, a.y | b);
         }
 
-        pub inline fn orVec(a: Vector2I, b: Vector2I) Vector2I {
+        pub inline fn orVec(a: Vector2Int, b: Vector2Int) Vector2Int {
             return .init(a.x | b.x, a.y | b.y);
         }
 
-        pub inline fn not(a: Vector2I) Vector2I {
+        pub inline fn not(a: Vector2Int) Vector2Int {
             return .init(~a.x, ~a.y);
         }
     };
 }
 
 test "Vector2I implCast" {
-    const Vector2i16 = MakeVector2I(i16);
-    const Vector2i17 = MakeVector2I(i17);
-    const a: Vector2i16 = .init(10, 10);
-    try std.testing.expect(Vector2i17.implCast(a).eql(.init(10, 10)));
+    const Vector2I16 = MakeVector2Int(i16);
+    const Vector2I17 = MakeVector2Int(i17);
+    const a: Vector2I16 = .init(10, 10);
+    try std.testing.expect(Vector2I17.implCast(a).eql(.init(10, 10)));
 }
 
 test "Vector2I cast" {
-    const Vector2i16 = MakeVector2I(i16);
-    const Vector2u16 = MakeVector2I(u16);
-    const a: Vector2i16 = .init(10, 10);
-    try std.testing.expect(Vector2u16.cast(a).eql(.init(10, 10)));
+    const Vector2I16 = MakeVector2Int(i16);
+    const Vector2U16 = MakeVector2Int(u16);
+    const a: Vector2I16 = .init(10, 10);
+    try std.testing.expect(Vector2U16.cast(a).eql(.init(10, 10)));
 }
 
 test "Vector2I bitmask" {
-    const Vector2i16 = MakeVector2I(i16);
-    const a: Vector2i16 = .init(10, 10);
+    const Vector2I16 = MakeVector2Int(i16);
+    const a: Vector2I16 = .init(10, 10);
     const a_and_7 = a.andScalar(7);
     try std.testing.expect(a_and_7.eql(.init(2, 2)));
 }
@@ -142,7 +142,7 @@ pub const Vector2 = struct {
     x: f32,
     y: f32,
 
-    const Vector2I = MakeVector2I(i32);
+    const Vector2I = MakeVector2Int(i32);
 
     pub const zero: Vector2 = .{ .x = 0, .y = 0 };
 
@@ -217,7 +217,7 @@ pub const Vector2B = struct {
     x: f64,
     y: f64,
 
-    const Vector2i32 = MakeVector2I(i32);
+    const Vector2i32 = MakeVector2Int(i32);
     pub const zero: Vector2B = .{ .x = 0, .y = 0 };
 
     pub inline fn init(x: f64, y: f64) Vector2B {

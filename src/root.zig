@@ -2,6 +2,8 @@ const Vectors = @import("vector.zig");
 
 pub const Vector2B = Vectors.Vector2B;
 pub const Vector2 = Vectors.Vector2;
+pub const Vector2Int = Vectors.MakeVector2Int;
+pub const IsVector2Int = Vectors.IsVector2Int;
 
 const FPLib = @import("fixed_point.zig");
 pub const FP = FPLib.FP;
