@@ -418,6 +418,14 @@ pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) typ
             ));
         }
 
+        pub inline fn max(a: FP, b: FP) FP {
+            .init(@max(a.back, b.back));
+        }
+
+        pub inline fn min(a: FP, b: FP) FP {
+            .init(@min(a.back, b.back));
+        }
+
         pub const FP2 = FP(
             is_fp.int_bits * 2,
             is_fp.frac_bits * 2,
