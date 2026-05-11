@@ -24,22 +24,11 @@ pub const IsFP = struct {
 };
 
 pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) type {
-    const BackInt: type = @Type(.{ .int = .{
-        .bits = int_size + frac_size,
-        .signedness = signedness,
-    } });
-    const SignedBackInt: type = @Type(.{ .int = .{
-        .bits = int_size + frac_size,
-        .signedness = .signed,
-    } });
-    const BackInt2: type = @Type(.{ .int = .{
-        .bits = (int_size + frac_size) * 2,
-        .signedness = signedness,
-    } });
-    const Int = @Type(.{ .int = .{
-        .bits = int_size,
-        .signedness = signedness,
-    } });
+    const size = int_size + frac_size;
+    const BackInt: type = @Int(signedness, size);
+    const SignedBackInt: type = @Int(.signed, size);
+    const BackInt2: type = @Int(signedness, 2 * size);
+    const Int = @Int(signedness, int_size);
     return struct {
         back: BackInt,
 
@@ -211,10 +200,7 @@ pub fn FP(int_size: u32, frac_size: u32, signedness: std.builtin.Signedness) typ
             assert(a.back >= 0);
             //this could be tightened up
             const b = FP2.UFP.implCast(a);
-            const BigInt = @Type(.{ .int = .{
-                .bits = FP2.UFP.bits + FP2.UFP.frac_bits,
-                .signedness = .unsigned,
-            } });
+            const BigInt = @Int(.unsigned, FP2.UFP.bits + FP2.UFP.frac_bits);
             const b_back = @as(BigInt, @intCast(b.back)) << FP2.UFP.frac_bits;
             const sqrt_b = FP2.UFP.init(
                 @intCast(std.math.sqrt(b_back)),

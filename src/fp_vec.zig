@@ -45,10 +45,7 @@ pub fn Vector2FP(FPBase: type) type {
             is_fp.frac_bits * 2,
             is_fp.signedness,
         );
-        pub const Vector2I = MakeVector2Int(@Type(.{ .int = .{
-            .bits = is_fp.int_bits,
-            .signedness = is_fp.signedness,
-        } }));
+        pub const Vector2I = MakeVector2Int(@Int(is_fp.signedness, is_fp.int_bits));
 
         x: FP,
         y: FP,
